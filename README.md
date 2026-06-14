@@ -2,12 +2,13 @@
 
 **A toolkit for managing what an AI coding agent loads — so it stays fast, accurate, and cheap as your project grows.**
 
-Two skills for Claude Code that attack the two ways context silently bloats:
+Three skills for Claude Code that attack the ways context silently bloats and misfires:
 
 1. **`context-budget`** — trims the *always-on* context re-read on every single turn.
 2. **`ingestion-compression`** — stops large documents from flooding context when you ask the agent to read them.
+3. **`skill-architecture`** — structures your skills so depth lives on-demand (lean every-turn cost) and personas always load the right context.
 
-Static hygiene + dynamic hygiene = the agent gets the **right** context at the **right time**, instead of *everything, all the time.*
+Static hygiene + dynamic hygiene + good structure = the agent gets the **right** context at the **right time**, instead of *everything, all the time.*
 
 ---
 
@@ -34,6 +35,12 @@ Most of a long document is irrelevant to the task. Reading it whole is like phot
 
 The insight: **a subagent has its own separate context window.** Send the document there. The subagent reads all 20 pages in *its* throwaway context, returns a few-hundred-token synthesis, and the raw source **never touches your main context.** You keep the substance; you discard the bulk.
 
+### Problem 3 — Unstructured skills (the architecture problem)
+
+Most people accumulate skills as a flat pile of task-named scripts ("fix-bug", "write-post") that overlap, misfire on ambiguous triggers, and carry no judgment. Worse for context: a flat pile either crams everything into always-on metadata, or stuffs each skill with its full context inline — so invoking one dumps a wall of text into the main thread, and personas still run *generically* because nothing tells them which context to load.
+
+The insight: structure skills like an **org chart** — a thin always-on steering layer, a few persona "employees" with judgment, narrow executors (sub-skills or isolated agents) that do the work, and per-persona context files (brand, playbooks, checklists) loaded **only when that employee works.** Good nesting *is* token optimization: only the orchestrator + persona *descriptions* are always-on; depth lives on-demand. And a required **Load-Context block** at the top of each persona guarantees the right context (and a preflight gate) loads at invocation — so the persona is deeply context-aware exactly when needed, and weightless otherwise.
+
 ---
 
 ## What this repo does
@@ -45,6 +52,10 @@ The insight: **a subagent has its own separate context window.** Send the docume
 ### `ingestion-compression` — fix uncontrolled ingestion
 - A **size-check helper** (`doc-size.sh`) that decides read-directly vs dispatch-subagent by document size.
 - A **procedure**: route large reference docs through a subagent that returns a 3-part `.synth.md` — **Synthesis** (the substance), **Map** (a section index so missing details are cheap to fetch), and **Pointer** (the path back to the original) — with a fidelity dial and an explicit override.
+
+### `skill-architecture` — structure the skills themselves
+- The **org-chart model**: Layer 0 `CLAUDE.md` (steering) → Layer 1 orchestrator (routes, knows WHO/WHEN not HOW) → Layer 2 persona "employees" (judgment, by domain) → Layer 3 executors (sub-skills inline or isolated agents) → Layer 4 context files (the per-persona handbook, on-demand).
+- The **skill-vs-agent rule** (judgment + light → skill; volume + isolation → agent), the **Load-Context block** that guarantees a persona loads its identity + playbook + preflight gate at invocation, a **drop-in persona template**, and a worked **example structure**.
 
 ### Proof (from the project that produced this)
 Auditing one real project: always-on context dropped from **~11,900 → ~5,600 tokens per turn (−53%)**; the project instruction file went **~5,800 → ~800 words**; 20 of the highest-value lessons were converted from inert archive entries into rules that auto-recall. Honest framing: the win is **signal-to-noise**, not raw cost (prompt caching makes re-reads cheap) — the agent now gets the right ~4,000 tokens instead of a noisy ~12,000.
@@ -65,6 +76,7 @@ Copy each skill folder into your Claude Code skills directory:
 ```bash
 cp -R skills/context-budget        ~/.claude/skills/context-budget
 cp -R skills/ingestion-compression ~/.claude/skills/ingestion-compression
+cp -R skills/skill-architecture    ~/.claude/skills/skill-architecture
 ```
 Then in any session just ask: *"audit my context budget"* or *"read this doc"* — the skills self-activate.
 
