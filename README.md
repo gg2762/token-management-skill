@@ -1,4 +1,4 @@
-# token-management-skill
+# Claude Code Foundations
 
 **The things I wish I knew before starting a project with Claude Code.**
 
@@ -74,8 +74,8 @@ Auditing one real project: always-on context dropped from **~11,900 → ~5,600 t
 
 ### 1. Get it
 ```bash
-git clone https://github.com/gg2762/token-management-skill.git
-cd token-management-skill
+git clone https://github.com/gg2762/claude-code-foundations.git
+cd claude-code-foundations
 ```
 (Or **Fork** on GitHub first, then clone your fork — recommended if you'll customize.)
 
